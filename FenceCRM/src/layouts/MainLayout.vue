@@ -1,6 +1,8 @@
 <script setup>
 
-import logo from '../assets/logo.png'
+import { ref } from "vue"
+
+import logo from "../assets/logo.png"
 
 import {
   LayoutDashboard,
@@ -10,31 +12,30 @@ import {
   BarChart3,
   Settings,
   PlusCircle,
-} from 'lucide-vue-next'
+} from "lucide-vue-next"
 
-import {
-  signOut,
-} from 'firebase/auth'
+import { signOut } from "firebase/auth"
 
 import {
   useRouter,
   RouterLink,
-} from 'vue-router'
+} from "vue-router"
 
-import { auth }
-from '../firebase'
+import { auth } from "../firebase"
 
-import { authStore }
-from '../stores/authStore'
+import { authStore } from "../stores/authStore"
 
 const router = useRouter()
 
+const sidebarOpen = ref(false)
+
+const toggleSidebar = () => {
+  sidebarOpen.value = !sidebarOpen.value
+}
+
 const logout = async () => {
-
   await signOut(auth)
-
-  router.push('/login')
-
+  router.push("/login")
 }
 
 </script>
@@ -43,14 +44,24 @@ const logout = async () => {
 
   <div class="flex h-screen bg-[#F5F7FB] overflow-hidden">
 
-    <!-- SIDEBAR -->
+    <!-- MOBILE OVERLAY -->
+    <div
+      v-if="sidebarOpen"
+      class="fixed inset-0 bg-black/50 z-40 lg:hidden"
+      @click="sidebarOpen = false"
+    ></div>
 
+    <!-- SIDEBAR -->
     <aside
-      class="w-[290px] bg-white border-r border-gray-100 flex flex-col"
+      :class="[
+        'fixed lg:static z-50 top-0 left-0 h-full w-[290px] bg-white border-r border-gray-100 flex flex-col transition-transform duration-300',
+        sidebarOpen
+          ? 'translate-x-0'
+          : '-translate-x-full lg:translate-x-0'
+      ]"
     >
 
       <!-- LOGO -->
-
       <div
         class="h-[90px] border-b border-gray-100 px-6 flex items-center gap-4"
       >
@@ -72,76 +83,49 @@ const logout = async () => {
       </div>
 
       <!-- MENU -->
-
       <nav class="flex-1 p-4 space-y-2 overflow-auto">
 
         <RouterLink
           to="/dashboard"
           class="menu-link"
         >
-
           <LayoutDashboard size="20" />
-
-          <span>
-            Dashboard
-          </span>
-
+          <span>Dashboard</span>
         </RouterLink>
 
         <RouterLink
           to="/requests"
           class="menu-link"
         >
-
           <ClipboardList size="20" />
-
-          <span>
-            Заявки
-          </span>
-
+          <span>Заявки</span>
         </RouterLink>
 
         <RouterLink
           to="/requests/create"
           class="menu-link"
         >
-
           <PlusCircle size="20" />
-
-          <span>
-            Создать заявку
-          </span>
-
+          <span>Создать заявку</span>
         </RouterLink>
 
         <RouterLink
           to="/orders"
           class="menu-link"
         >
-
           <ShoppingCart size="20" />
-
-          <span>
-            Заказы
-          </span>
-
+          <span>Заказы</span>
         </RouterLink>
 
         <RouterLink
           to="/clients"
           class="menu-link"
         >
-
           <Users size="20" />
-
-          <span>
-            Клиенты
-          </span>
-
+          <span>Клиенты</span>
         </RouterLink>
 
         <!-- ANALYTICS -->
-
         <RouterLink
           v-if="
             authStore.role === 'admin'
@@ -151,42 +135,26 @@ const logout = async () => {
           to="/analytics"
           class="menu-link"
         >
-
           <BarChart3 size="20" />
-
-          <span>
-            Аналитика
-          </span>
-
+          <span>Аналитика</span>
         </RouterLink>
 
         <!-- SETTINGS -->
-
         <RouterLink
           v-if="authStore.role === 'admin'"
           to="/settings"
           class="menu-link"
         >
-
           <Settings size="20" />
-
-          <span>
-            Настройки
-          </span>
-
+          <span>Настройки</span>
         </RouterLink>
 
       </nav>
 
       <!-- USER -->
+      <div class="p-4 border-t border-gray-100">
 
-      <div
-        class="p-4 border-t border-gray-100"
-      >
-
-        <div
-          class="bg-gray-50 rounded-2xl p-4"
-        >
+        <div class="bg-gray-50 rounded-2xl p-4">
 
           <div class="flex items-center gap-4">
 
@@ -234,42 +202,52 @@ const logout = async () => {
     </aside>
 
     <!-- CONTENT -->
-
     <div class="flex-1 flex flex-col overflow-hidden">
 
       <!-- HEADER -->
-
       <header
-        class="bg-white border-b border-gray-200 px-8 py-5 flex items-center justify-between shrink-0"
+        class="bg-white border-b border-gray-200 px-4 lg:px-8 py-5 flex items-center justify-between shrink-0"
       >
 
-        <div>
+        <!-- LEFT -->
+        <div class="flex items-center gap-4">
 
-          <h2
-            class="text-3xl font-bold text-gray-800"
+          <!-- BURGER -->
+          <button
+            class="lg:hidden text-2xl"
+            @click="toggleSidebar"
           >
-            CRM система управления
-          </h2>
+            ☰
+          </button>
 
-          <p class="text-gray-400 mt-1">
-            Автоматизация заявок и заказов
-          </p>
+          <div>
 
-          <div class="mt-4">
+            <h2
+              class="text-2xl lg:text-3xl font-bold text-gray-800"
+            >
+              CRM система управления
+            </h2>
 
-            <input
-              type="text"
-              placeholder="Быстрый поиск..."
-              class="w-[300px] border border-gray-200 rounded-2xl px-5 py-3 outline-none focus:border-cyan-500"
-            />
+            <p class="text-gray-400 mt-1 hidden md:block">
+              Автоматизация заявок и заказов
+            </p>
+
+            <div class="mt-4 hidden md:block">
+
+              <input
+                type="text"
+                placeholder="Быстрый поиск..."
+                class="w-[300px] border border-gray-200 rounded-2xl px-5 py-3 outline-none focus:border-cyan-500"
+              />
+
+            </div>
 
           </div>
 
         </div>
 
-        <div
-          class="flex items-center gap-4"
-        >
+        <!-- RIGHT -->
+        <div class="flex items-center gap-4">
 
           <div
             class="hidden md:flex flex-col text-right"
@@ -306,10 +284,9 @@ const logout = async () => {
       </header>
 
       <!-- PAGE -->
-
       <main class="flex-1 overflow-auto bg-gray-100">
 
-        <div class="p-8">
+        <div class="p-4 lg:p-8">
           <router-view />
         </div>
 
