@@ -1,0 +1,17 @@
+{
+  "dependencies": {
+    "chart.js": "^4.5.1",
+    "docx": "^9.7.0",
+    "file-saver": "^2.0.5",
+    "firebase": "^12.13.0",
+    "lucide-vue-next": "^1.0.0",
+    "pinia": "^3.0.4",
+    "vue-chartjs": "^5.3.3",
+    "vue-router": "^5.0.7"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.5.0",
+    "postcss": "^8.5.15",
+    "tailwindcss": "^4.3.0"
+  }
+}
