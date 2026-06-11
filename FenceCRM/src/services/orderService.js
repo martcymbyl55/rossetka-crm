@@ -31,9 +31,8 @@ export async function createOrder(data) {
         requestId:
           data.requestId || null,
 
-        // =====================================
+      
         // CLIENT
-        // =====================================
 
         clientName:
           data.clientName || '',
@@ -47,6 +46,11 @@ export async function createOrder(data) {
         clientType:
           data.clientType || '',
 
+        organizationName:
+          data.organizationName || '',
+
+        inn:
+          data.inn || '',
         // =====================================
         // FENCE
         // =====================================
