@@ -75,7 +75,7 @@ const logout = async () => {
         <div>
 
           <h1 class="text-2xl font-bold text-[#0044AA]">
-            Россетка CRM
+            Россетка
           </h1>
 
         </div>

@@ -150,7 +150,7 @@ const login = async () => {
         <h1
           class="text-4xl font-bold text-[#0044AA]"
         >
-          Россетка CRM
+          Россетка
         </h1>
 
         <p class="text-gray-400 mt-3">

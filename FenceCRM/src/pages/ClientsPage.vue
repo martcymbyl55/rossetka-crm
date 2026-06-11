@@ -12,9 +12,13 @@ import {
 
 import { db } from '../firebase'
 
+import { useRouter } from 'vue-router'
+
 const requests = ref([])
 const loading = ref(true)
 const search = ref('')
+const selectedClient = ref(null)
+const router = useRouter()
 
 const paidStatuses = [
   'Заказ оплачен',
@@ -98,6 +102,37 @@ const totalPaidOrders = computed(() => {
     return sum + client.paidOrdersCount
   }, 0)
 })
+
+const selectedClientRequests = computed(() => {
+  if (!selectedClient.value) {
+    return []
+  }
+
+  return requests.value
+    .filter((request) => {
+      return (
+        request.clientPhone === selectedClient.value.clientPhone
+      )
+    })
+    .sort((a, b) => {
+      return (
+        Number(b.createdAt?.seconds || 0) -
+        Number(a.createdAt?.seconds || 0)
+      )
+    })
+})
+
+const openClientModal = (client) => {
+  selectedClient.value = client
+}
+
+const closeClientModal = () => {
+  selectedClient.value = null
+}
+
+const openRequest = (id) => {
+  router.push(`/requests/${id}`)
+}
 </script>
 
 <template>
@@ -108,7 +143,7 @@ const totalPaidOrders = computed(() => {
       </h1>
 
       <p class="text-gray-400 mt-2">
-        База клиентов CRM системы
+        База клиентов системы
       </p>
     </div>
 
@@ -188,7 +223,8 @@ const totalPaidOrders = computed(() => {
           <tr
             v-for="client in filteredClients"
             :key="client.id"
-            class="border-t border-gray-100 hover:bg-gray-50 transition"
+            class="border-t border-gray-100 hover:bg-blue-50 transition cursor-pointer"
+            @dblclick="openClientModal(client)"
           >
             <td class="table-cell font-semibold">
               {{ client.clientName }}
@@ -221,6 +257,109 @@ const totalPaidOrders = computed(() => {
         </tbody>
       </table>
     </div>
+    <div
+  v-if="selectedClient"
+  class="modal-overlay"
+  @click.self="closeClientModal"
+>
+  <div class="modal-card">
+    <div class="flex items-start justify-between gap-4 mb-6">
+      <div>
+        <h2 class="text-3xl font-bold text-gray-800">
+          {{ selectedClient.clientName }}
+        </h2>
+
+        <p class="text-gray-400 mt-2">
+          Карточка клиента
+        </p>
+      </div>
+
+      <button
+        @click="closeClientModal"
+        class="close-btn"
+      >
+        ×
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div class="info-box">
+        <div class="info-title">Телефон</div>
+        <div class="info-value">{{ selectedClient.clientPhone }}</div>
+      </div>
+
+      <div class="info-box">
+        <div class="info-title">Email</div>
+        <div class="info-value">{{ selectedClient.clientEmail }}</div>
+      </div>
+
+      <div class="info-box">
+        <div class="info-title">Всего заявок</div>
+        <div class="info-value">{{ selectedClient.requestsCount }}</div>
+      </div>
+
+      <div class="info-box">
+        <div class="info-title">Оплаченных заказов</div>
+        <div class="info-value">{{ selectedClient.paidOrdersCount }}</div>
+      </div>
+
+      <div class="info-box">
+        <div class="info-title">Средний чек</div>
+        <div class="info-value">{{ formatPrice(selectedClient.averageCheck) }} ₽</div>
+      </div>
+
+      <div class="info-box">
+        <div class="info-title">Выручка</div>
+        <div class="info-value text-[#0044AA]">{{ formatPrice(selectedClient.revenue) }} ₽</div>
+      </div>
+    </div>
+
+    <h3 class="text-2xl font-bold text-gray-800 mb-4">
+      Заявки и заказы клиента
+    </h3>
+
+    <div
+      v-if="!selectedClientRequests.length"
+      class="text-gray-400 py-8 text-center"
+    >
+      Данные по заявкам не найдены
+    </div>
+
+    <div
+      v-else
+      class="space-y-3 max-h-[300px] overflow-y-auto pr-2"
+    >
+      <div
+        v-for="request in selectedClientRequests"
+        :key="request.id"
+        class="request-row"
+      >
+        <div>
+          <div class="font-semibold text-gray-800">
+            {{ request.status || 'Без статуса' }}
+          </div>
+
+          <div class="text-sm text-gray-400 mt-1">
+            {{ request.length || 0 }} м · {{ request.height || 0 }} мм
+          </div>
+        </div>
+
+        <div class="text-right">
+          <div class="font-bold text-[#0044AA]">
+            {{ formatPrice(request.totalPrice) }} ₽
+          </div>
+
+          <button
+            @click="openRequest(request.id)"
+            class="open-btn mt-2"
+          >
+            Открыть
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
   </div>
 </template>
 
@@ -251,5 +390,37 @@ const totalPaidOrders = computed(() => {
 
 .kpi-value {
   @apply text-3xl font-bold mt-4 text-[#0044AA];
+}
+
+.modal-overlay {
+  @apply fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4;
+}
+
+.modal-card {
+  @apply bg-white rounded-3xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-xl;
+}
+
+.close-btn {
+  @apply w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 text-2xl font-bold transition;
+}
+
+.info-box {
+  @apply bg-gray-50 rounded-2xl p-4;
+}
+
+.info-title {
+  @apply text-sm text-gray-400;
+}
+
+.info-value {
+  @apply text-lg font-bold text-gray-800 mt-2;
+}
+
+.request-row {
+  @apply flex justify-between gap-4 bg-gray-50 rounded-2xl p-4 border border-gray-100;
+}
+
+.open-btn {
+  @apply bg-[#0044AA] hover:bg-[#003380] text-white px-4 py-2 rounded-xl text-sm font-semibold transition;
 }
 </style>

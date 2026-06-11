@@ -12,6 +12,14 @@ import {
   onMounted,
 } from 'vue'
 
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+const openOrder = (id) => {
+  router.push(`/requests/${id}`)
+}
+
 import { RouterLink } from 'vue-router'
 import { db } from '../firebase'
 
@@ -247,7 +255,6 @@ const getStatusColor = (status) => {
               <th class="table-head">Высота</th>
               <th class="table-head">Стоимость</th>
               <th class="table-head">Статус</th>
-              <th class="table-head">Действия</th>
             </tr>
           </thead>
 
@@ -256,6 +263,7 @@ const getStatusColor = (status) => {
               v-for="(item, index) in filteredRequests"
               :key="item.id"
               class="border-b border-gray-50 hover:bg-gray-50 transition"
+              @dblclick="openOrder(item.id)"
             >
               <td class="table-cell font-semibold">
                 #{{ index + 1 }}
@@ -304,15 +312,6 @@ const getStatusColor = (status) => {
                 >
                   {{ item.status || 'Без статуса' }}
                 </span>
-              </td>
-
-              <td class="table-cell">
-                <RouterLink
-                  :to="`/requests/${item.id}`"
-                  class="details-btn"
-                >
-                  Открыть
-                </RouterLink>
               </td>
             </tr>
           </tbody>

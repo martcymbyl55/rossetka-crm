@@ -411,6 +411,13 @@ const getStatusColor = (status) => {
 
     <div class="flex items-center justify-between flex-wrap gap-4">
       <div>
+        <button
+          @click="router.back()"
+          class="back-btn mb-4"
+        >
+          ← Назад
+        </button>
+
         <h1 class="text-4xl font-bold text-gray-800">
           Карточка заявки
         </h1>
@@ -1066,5 +1073,9 @@ const getStatusColor = (status) => {
 
 .archive-btn {
   @apply bg-gray-600 hover:bg-gray-700 text-white py-3 px-5 rounded-2xl font-semibold transition;
+}
+
+.back-btn {
+  @apply inline-flex items-center bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-3 rounded-2xl font-semibold transition;
 }
 </style>

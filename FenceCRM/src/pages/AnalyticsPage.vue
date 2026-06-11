@@ -296,7 +296,7 @@ const chartOptions = {
   <div class="space-y-8">
     <div>
       <h1 class="text-4xl font-bold text-gray-800">
-        Аналитика CRM
+        Аналитика
       </h1>
 
       <p class="text-gray-400 mt-2">
