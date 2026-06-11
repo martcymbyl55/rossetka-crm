@@ -27,9 +27,6 @@ from '../pages/OrdersPage.vue'
 import AnalyticsPage
 from '../pages/AnalyticsPage.vue'
 
-import SettingsPage
-from '../pages/SettingsPage.vue'
-
 import LoginPage
 from '../pages/LoginPage.vue'
 
@@ -101,10 +98,6 @@ const routes = [
         component: AnalyticsPage,
       },
 
-      {
-        path: 'settings',
-        component: SettingsPage,
-      },
 
     ],
 

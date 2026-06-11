@@ -139,16 +139,6 @@ const logout = async () => {
           <span>Аналитика</span>
         </RouterLink>
 
-        <!-- SETTINGS -->
-        <RouterLink
-          v-if="authStore.role === 'admin'"
-          to="/settings"
-          class="menu-link"
-        >
-          <Settings size="20" />
-          <span>Настройки</span>
-        </RouterLink>
-
       </nav>
 
       <!-- USER -->
@@ -219,31 +209,6 @@ const logout = async () => {
           >
             ☰
           </button>
-
-          <div>
-
-            <h2
-              class="text-2xl lg:text-3xl font-bold text-gray-800"
-            >
-              CRM система управления
-            </h2>
-
-            <p class="text-gray-400 mt-1 hidden md:block">
-              Автоматизация заявок и заказов
-            </p>
-
-            <div class="mt-4 hidden md:block">
-
-              <input
-                type="text"
-                placeholder="Быстрый поиск..."
-                class="w-[300px] border border-gray-200 rounded-2xl px-5 py-3 outline-none focus:border-cyan-500"
-              />
-
-            </div>
-
-          </div>
-
         </div>
 
         <!-- RIGHT -->

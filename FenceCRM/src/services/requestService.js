@@ -1,12 +1,10 @@
 import {
-
   collection,
   addDoc,
   updateDoc,
   deleteDoc,
   doc,
   Timestamp,
-
 } from 'firebase/firestore'
 
 import { db } from '../firebase'
@@ -16,206 +14,208 @@ import { db } from '../firebase'
 // =====================================
 
 export async function createRequest(data) {
-
   try {
+    const status = data.status || 'Заказ рассчитан'
 
     const docRef = await addDoc(
-
       collection(db, 'requests'),
-
       {
-
-        // =====================================
         // CLIENT
-        // =====================================
+        clientName: data.clientName || '',
+        clientEmail: data.clientEmail || '',
+        clientPhone: data.clientPhone || '',
+        clientType: data.clientType || '',
 
-        clientName:
-          data.clientName || '',
+        organizationName: data.organizationName || '',
+        inn: data.inn || '',
 
-        clientEmail:
-          data.clientEmail || '',
+        source: data.source || '',
+        city: data.city || '',
 
-        clientPhone:
-          data.clientPhone || '',
-
-        clientType:
-          data.clientType || '',
-
-        // =====================================
         // FENCE
-        // =====================================
+        type: data.type || '3d',
+        length: Number(data.length) || 0,
+        height: Number(data.height) || 0,
+        width: Number(data.width) || 0,
+        wire: data.wire || '',
+        cell: data.cell || '',
+        coating: data.coating || '',
+        color: data.color || '',
+        customColor: data.customColor || '',
 
-        type:
-          data.type || '',
+        // GEOMETRY
+        cornersCount: Number(data.cornersCount) || 0,
+        wicketCount: Number(data.wicketCount) || 0,
+        swingGateCount: Number(data.swingGateCount) || 0,
+        slidingGateCount: Number(data.slidingGateCount) || 0,
 
-        length:
-          Number(data.length) || 0,
+        // SPORT
+        isSportFence: Boolean(data.isSportFence),
+        sportRows: Number(data.sportRows) || 1,
+        actualFenceHeight: Number(data.actualFenceHeight) || 0,
 
-        height:
-          Number(data.height) || 0,
+        // FASTENING
+        fastening: data.fastening || 'standard',
 
-        width:
-          Number(data.width) || 0,
+        // WICKET
+        wicketType: data.wicketType || 'standard',
+        wicketHeight: Number(data.wicketHeight) || 1750,
+        wicketWidth: Number(data.wicketWidth) || 1000,
 
-        wire:
-          data.wire || '',
+        // GATES
+        swingGateHeight: Number(data.swingGateHeight) || 1750,
+        swingGateWidth: Number(data.swingGateWidth) || 4000,
+        slidingGateHeight: Number(data.slidingGateHeight) || 1750,
+        slidingGateWidth: Number(data.slidingGateWidth) || 4000,
 
-        gate:
-          data.gate || '',
+        // DELIVERY / INSTALLATION
+        deliveryPriceManual: Number(data.deliveryPriceManual) || 0,
+        installationPriceManual: Number(data.installationPriceManual) || 0,
 
-        wicket:
-          data.wicket || '',
+        // FINANCE
+        customDiscount: Number(data.customDiscount) || 0,
+        totalPrice: Number(data.totalPrice) || 0,
 
-        pillars:
-          data.pillars || '',
+        // CALCULATION
+        calculation: data.calculation || null,
 
-        color:
-          data.color || '',
-
-        customColor:
-          data.customColor || '',
-
-        // =====================================
-        // DELIVERY
-        // =====================================
-
-        distance:
-          Number(data.distance) || 0,
-
-        deliveryType:
-          data.deliveryType || '',
-
-        deliveryPrice:
-          Number(data.deliveryPrice) || 0,
-
-        // =====================================
-        // INSTALLATION
-        // =====================================
-
-        installationType:
-          data.installationType || '',
-
-        installationPrice:
-          Number(data.installationPrice) || 0,
-
-        // =====================================
-        // DISCOUNT
-        // =====================================
-
-        customDiscount:
-          Number(data.customDiscount) || 0,
-
-        finalDiscount:
-          Number(data.finalDiscount) || 0,
-
-        // =====================================
         // COMMENT
-        // =====================================
+        comment: data.comment || '',
 
-        comment:
-          data.comment || '',
-
-        // =====================================
-        // TOTAL
-        // =====================================
-
-        totalPrice:
-          Number(data.totalPrice) || 0,
-
-        // =====================================
         // STATUS
-        // =====================================
+        status,
 
-        status:
-          data.status || 'Новая заявка',
+        convertedToOrder: Boolean(data.convertedToOrder),
+        isProductionOrder: Boolean(data.isProductionOrder),
+        productionStatus: data.productionStatus || 'Не запущен',
 
-        // =====================================
         // DATES
-        // =====================================
-
-        createdAt:
-          Timestamp.now(),
-
-        updatedAt:
-          Timestamp.now(),
-
+        createdAt: Timestamp.now(),
+        updatedAt: Timestamp.now(),
       }
+    )
 
+    await addDoc(
+      collection(db, 'requests', docRef.id, 'history'),
+      {
+        action: 'Создание заявки',
+        description: 'Заявка создана и рассчитана',
+        status,
+        createdAt: Timestamp.now(),
+      }
     )
 
     return {
-
       success: true,
-
       id: docRef.id,
-
     }
-
   } catch (error) {
-
     console.error(error)
 
     return {
-
       success: false,
-
       error,
-
     }
-
   }
-
 }
 
 // =====================================
 // UPDATE REQUEST
 // =====================================
 
-export async function updateRequest(
-
-  id,
-
-  data
-
-) {
-
+export async function updateRequest(id, data) {
   try {
-
     await updateDoc(
-
       doc(db, 'requests', id),
-
       {
-
         ...data,
-
-        updatedAt:
-          Timestamp.now(),
-
+        updatedAt: Timestamp.now(),
       }
-
     )
 
     return {
-
       success: true,
-
     }
-
   } catch (error) {
-
     console.error(error)
 
     return {
-
       success: false,
-
       error,
-
     }
-
   }
+}
 
+// =====================================
+// CHANGE REQUEST STATUS
+// =====================================
+
+export async function changeRequestStatus(
+  id,
+  request,
+  newStatus,
+  historyText,
+  extraData = {}
+) {
+  try {
+    await updateDoc(
+      doc(db, 'requests', id),
+      {
+        status: newStatus,
+        ...extraData,
+        updatedAt: Timestamp.now(),
+      }
+    )
+
+    await addDoc(
+      collection(db, 'requests', id, 'history'),
+      {
+        action: 'Изменение статуса',
+        description: historyText || `Статус изменен на "${newStatus}"`,
+        status: newStatus,
+        createdAt: Timestamp.now(),
+      }
+    )
+
+    return {
+      success: true,
+    }
+  } catch (error) {
+    console.error(error)
+
+    return {
+      success: false,
+      error,
+    }
+  }
+}
+
+// =====================================
+// ADD HISTORY ITEM
+// =====================================
+
+export async function addRequestHistory(id, request, text) {
+  try {
+    await addDoc(
+      collection(db, 'requests', id, 'history'),
+      {
+        action: 'История',
+        description: text,
+        createdAt: Timestamp.now(),
+      }
+    )
+
+    return {
+      success: true,
+    }
+  } catch (error) {
+    console.error(error)
+
+    return {
+      success: false,
+      error,
+    }
+  }
 }
 
 // =====================================
@@ -223,33 +223,20 @@ export async function updateRequest(
 // =====================================
 
 export async function deleteRequest(id) {
-
   try {
-
     await deleteDoc(
-
       doc(db, 'requests', id)
-
     )
 
     return {
-
       success: true,
-
     }
-
   } catch (error) {
-
     console.error(error)
 
     return {
-
       success: false,
-
       error,
-
     }
-
   }
-
 }

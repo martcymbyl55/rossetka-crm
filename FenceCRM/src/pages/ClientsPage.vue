@@ -1,5 +1,4 @@
 <script setup>
-
 import {
   collection,
   onSnapshot,
@@ -14,167 +13,96 @@ import {
 import { db } from '../firebase'
 
 const requests = ref([])
-
 const loading = ref(true)
-
 const search = ref('')
 
-// =====================================
-// LOAD
-// =====================================
+const paidStatuses = [
+  'Заказ оплачен',
+  'В производстве',
+  'Готов к отгрузке',
+  'Доставляется',
+  'Завершен',
+]
 
 onMounted(() => {
+  onSnapshot(collection(db, 'requests'), (snapshot) => {
+    requests.value = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }))
 
-  onSnapshot(
-    collection(db, 'requests'),
-
-    (snapshot) => {
-
-      requests.value =
-        snapshot.docs.map((doc) => ({
-
-          id: doc.id,
-
-          ...doc.data(),
-
-        }))
-
-      loading.value = false
-
-    }
-
-  )
-
+    loading.value = false
+  })
 })
 
-// =====================================
-// CLIENTS
-// =====================================
+const formatPrice = (value) => {
+  return Number(value || 0).toLocaleString('ru-RU')
+}
 
 const clients = computed(() => {
-
   const grouped = {}
 
   requests.value.forEach((request) => {
-
-    const phone =
-
-      request.clientPhone ||
-      request.id
+    const phone = request.clientPhone || request.id
 
     if (!grouped[phone]) {
-
       grouped[phone] = {
-
         id: phone,
-
-        clientName:
-          request.clientName ||
-          'Без имени',
-
-        clientPhone:
-          request.clientPhone || '-',
-
-        clientEmail:
-          request.clientEmail || '-',
-
-        orders: 0,
-
+        clientName: request.clientName || 'Без имени',
+        clientPhone: request.clientPhone || '-',
+        clientEmail: request.clientEmail || '-',
+        requestsCount: 0,
+        paidOrdersCount: 0,
         revenue: 0,
-
         averageCheck: 0,
-
       }
-
     }
 
-    grouped[phone].orders += 1
+    grouped[phone].requestsCount += 1
 
-    grouped[phone].revenue +=
-      Number(request.totalPrice || 0)
+    if (paidStatuses.includes(request.status)) {
+      grouped[phone].paidOrdersCount += 1
+      grouped[phone].revenue += Number(request.totalPrice || 0)
+    }
 
     grouped[phone].averageCheck =
-      Math.round(
-
-        grouped[phone].revenue /
-        grouped[phone].orders
-
-      )
-
+      grouped[phone].paidOrdersCount > 0
+        ? Math.round(grouped[phone].revenue / grouped[phone].paidOrdersCount)
+        : 0
   })
 
   return Object.values(grouped)
-
-    .sort(
-      (a, b) =>
-        b.revenue - a.revenue
-    )
-
+    .sort((a, b) => b.revenue - a.revenue)
 })
-
-// =====================================
-// FILTER
-// =====================================
 
 const filteredClients = computed(() => {
-
   return clients.value.filter((client) => {
-
-    const value =
-      search.value.toLowerCase()
+    const value = search.value.toLowerCase()
 
     return (
-
-      String(client.clientName || '')
-        .toLowerCase()
-        .includes(value)
-
-      ||
-
-      String(client.clientPhone || '')
-        .toLowerCase()
-        .includes(value)
-
-      ||
-
-      String(client.clientEmail || '')
-        .toLowerCase()
-        .includes(value)
-
+      String(client.clientName || '').toLowerCase().includes(value) ||
+      String(client.clientPhone || '').toLowerCase().includes(value) ||
+      String(client.clientEmail || '').toLowerCase().includes(value)
     )
-
   })
-
 })
-
-// =====================================
-// KPI
-// =====================================
 
 const totalRevenue = computed(() => {
-
-  return clients.value.reduce(
-
-    (sum, client) =>
-
-      sum + client.revenue,
-
-    0
-
-  )
-
+  return clients.value.reduce((sum, client) => {
+    return sum + client.revenue
+  }, 0)
 })
 
+const totalPaidOrders = computed(() => {
+  return clients.value.reduce((sum, client) => {
+    return sum + client.paidOrdersCount
+  }, 0)
+})
 </script>
 
 <template>
-
   <div class="space-y-8">
-
-    <!-- HEADER -->
-
     <div>
-
       <h1 class="text-4xl font-bold text-gray-800">
         Клиенты
       </h1>
@@ -182,17 +110,10 @@ const totalRevenue = computed(() => {
       <p class="text-gray-400 mt-2">
         База клиентов CRM системы
       </p>
-
     </div>
 
-    <!-- KPI -->
-
-    <div
-      class="grid grid-cols-1 md:grid-cols-2 gap-5"
-    >
-
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
       <div class="kpi-card">
-
         <div class="kpi-title">
           Всего клиентов
         </div>
@@ -200,40 +121,39 @@ const totalRevenue = computed(() => {
         <div class="kpi-value">
           {{ clients.length }}
         </div>
-
       </div>
 
       <div class="kpi-card">
-
         <div class="kpi-title">
-          Общая выручка
+          Оплаченных заказов
         </div>
 
         <div class="kpi-value">
-          {{ totalRevenue.toLocaleString() }} ₽
+          {{ totalPaidOrders }}
         </div>
-
       </div>
 
+      <div class="kpi-card">
+        <div class="kpi-title">
+          Выручка по клиентам
+        </div>
+
+        <div class="kpi-value">
+          {{ formatPrice(totalRevenue) }} ₽
+        </div>
+      </div>
     </div>
 
-    <!-- SEARCH -->
-
     <div class="card">
-
       <input
         v-model="search"
         type="text"
         placeholder="Поиск клиента..."
         class="input"
       />
-
     </div>
 
-    <!-- TABLE -->
-
     <div class="card overflow-x-auto">
-
       <div
         v-if="loading"
         class="text-center py-16 text-gray-400"
@@ -252,52 +172,25 @@ const totalRevenue = computed(() => {
         v-else
         class="w-full"
       >
-
-        <thead
-          class="bg-gray-50 sticky top-0"
-        >
-
+        <thead class="bg-gray-50 sticky top-0">
           <tr>
-
-            <th class="table-head">
-              Клиент
-            </th>
-
-            <th class="table-head">
-              Телефон
-            </th>
-
-            <th class="table-head">
-              Email
-            </th>
-
-            <th class="table-head">
-              Заказов
-            </th>
-
-            <th class="table-head">
-              Средний чек
-            </th>
-
-            <th class="table-head">
-              Общая сумма
-            </th>
-
+            <th class="table-head">Клиент</th>
+            <th class="table-head">Телефон</th>
+            <th class="table-head">Email</th>
+            <th class="table-head">Заявок</th>
+            <th class="table-head">Оплаченных заказов</th>
+            <th class="table-head">Средний чек</th>
+            <th class="table-head">Выручка</th>
           </tr>
-
         </thead>
 
         <tbody>
-
           <tr
             v-for="client in filteredClients"
             :key="client.id"
             class="border-t border-gray-100 hover:bg-gray-50 transition"
           >
-
-            <td
-              class="table-cell font-semibold"
-            >
+            <td class="table-cell font-semibold">
               {{ client.clientName }}
             </td>
 
@@ -310,43 +203,28 @@ const totalRevenue = computed(() => {
             </td>
 
             <td class="table-cell">
-              {{ client.orders }}
+              {{ client.requestsCount }}
             </td>
 
             <td class="table-cell">
-
-              {{
-                client.averageCheck
-                  .toLocaleString()
-              }} ₽
-
+              {{ client.paidOrdersCount }}
             </td>
 
-            <td
-              class="table-cell font-bold text-[#0044AA]"
-            >
-
-              {{
-                client.revenue
-                  .toLocaleString()
-              }} ₽
-
+            <td class="table-cell">
+              {{ formatPrice(client.averageCheck) }} ₽
             </td>
 
+            <td class="table-cell font-bold text-[#0044AA]">
+              {{ formatPrice(client.revenue) }} ₽
+            </td>
           </tr>
-
         </tbody>
-
       </table>
-
     </div>
-
   </div>
-
 </template>
 
 <style scoped>
-
 .card {
   @apply bg-white rounded-3xl p-6 border border-gray-100 shadow-sm;
 }
@@ -374,5 +252,4 @@ const totalRevenue = computed(() => {
 .kpi-value {
   @apply text-3xl font-bold mt-4 text-[#0044AA];
 }
-
 </style>

@@ -30,28 +30,56 @@ const clientTypes = [
   'Дилер',
 ]
 
-const deliveryTypes = [
-  'Самовывоз',
-  'Пермь',
-  'Пермский край',
-  'Транспортная компания',
-]
-
-const installationTypes = [
-  'Без монтажа',
-  'Частичный монтаж',
-  'Полный монтаж',
+const coatingOptions = [
+  { value: 'zinc', label: 'Цинк' },
+  { value: 'polymer', label: 'Полимерное покрытие' },
 ]
 
 const colors = [
-  { value: 'green', label: 'Зеленый' },
-  { value: 'zinc', label: 'Цинк' },
-  { value: 'brown', label: 'Коричневый' },
-  { value: 'black', label: 'Черный' },
-  { value: 'yellow', label: 'Желтый' },
-  { value: 'gray', label: 'Серый' },
-  { value: 'blue', label: 'Синий' },
-  { value: 'custom', label: 'Свой вариант' },
+  { value: 'ral6005', label: 'Зеленый (RAL 6005)' },
+  { value: 'ral8017', label: 'Коричневый (RAL 8017)' },
+  { value: 'ral7024', label: 'Графитовый (RAL 7024)' },
+  { value: 'ral9005', label: 'Черный (RAL 9005)' },
+  { value: 'ral7004', label: 'Серый (RAL 7004)' },
+  { value: 'custom', label: 'Другой цвет RAL' },
+]
+
+const wireOptions = [
+  '3.5',
+  '4',
+  '5',
+]
+
+const cellOptions = [
+  '200x55',
+  '150x55',
+  '100x55',
+  '200x50',
+  '150x50',
+  '100x50',
+]
+
+const panelHeightOptions = [1030, 1230, 1530, 1730, 2030]
+const gateHeightOptions = [1450, 1750, 1950]
+const gateWidthOptions = [3000, 3500, 4000, 4500, 5000]
+
+const fasteningOptions = [
+
+  {
+    value: 'standard',
+    label: 'Болтовое крепление',
+  },
+
+  {
+    value: 'antivandal',
+    label: 'Антивандальное крепление',
+  },
+
+  {
+    value: 'selftap',
+    label: 'Саморез',
+  },
+
 ]
 
 /*
@@ -62,102 +90,408 @@ const colors = [
 
 const defaultForm = () => ({
 
+  /*
+  |--------------------------------------------------------------------------
+  | CLIENT
+  |--------------------------------------------------------------------------
+  */
+
   clientName: '',
   clientPhone: '',
   clientEmail: '',
+
   clientType: 'Физическое лицо',
+
+  organizationName: '',
+  inn: '',
+
+  source: 'Авито',
+  city: '',
+
+  /*
+  |--------------------------------------------------------------------------
+  | FENCE
+  |--------------------------------------------------------------------------
+  */
 
   type: '3d',
 
   length: 50,
-
-  height: 1530,
-  customHeight: '',
-
   width: 2500,
-  customWidth: '',
+  height: 1530,
+  cornersCount: 0,
+  wicketCount: 0,
+  swingGateCount: 0,
+  slidingGateCount: 0,
+  deliveryPriceManual: 0,
+  installationPriceManual: 0,
+
+  /*
+  |--------------------------------------------------------------------------
+  | SPORTS FENCE
+  |--------------------------------------------------------------------------
+  */
+
+  isSportFence: 0,
+
+  sportRows: 1,
+
+  /*
+  |--------------------------------------------------------------------------
+  | PANELS
+  |--------------------------------------------------------------------------
+  */
 
   wire: '4',
-  customWire: '',
 
-  pillars: '60x40',
-  customPillars: '',
+  cell: '200x55',
+  coating: 'polymer',
+  color: 'ral6005',
 
-  wicket: 'none',
-
-  gate: 'none',
-
-  color: 'green',
   customColor: '',
 
-  distance: 0,
-  deliveryType: 'Самовывоз',
+  /*
+  |--------------------------------------------------------------------------
+  | FASTENING
+  |--------------------------------------------------------------------------
+  */
 
-  installationType: 'Без монтажа',
+  fastening: 'standard',
+
+  /*
+  |--------------------------------------------------------------------------
+  | WICKET
+  |--------------------------------------------------------------------------
+  */
+
+  wicketType: 'standard',
+
+  wicketHeight: 1750,
+
+  wicketWidth: 1000,
+
+  /*
+  |--------------------------------------------------------------------------
+  | GATES
+  |--------------------------------------------------------------------------
+  */
+
+  swingGateHeight: 1750,
+  swingGateWidth: 4000,
+  slidingGateHeight: 1750,
+  slidingGateWidth: 4000,
+
+  /*
+  |--------------------------------------------------------------------------
+  | DELIVERY
+  |--------------------------------------------------------------------------
+  */
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | INSTALLATION
+  |--------------------------------------------------------------------------
+  */
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | FINANCE
+  |--------------------------------------------------------------------------
+  */
 
   customDiscount: 0,
 
+  /*
+  |--------------------------------------------------------------------------
+  | COMMENT
+  |--------------------------------------------------------------------------
+  */
+
   comment: '',
+
+  /*
+  |--------------------------------------------------------------------------
+  | STATUS
+  |--------------------------------------------------------------------------
+  */
 
   status: 'Новая заявка',
 
+  convertedToOrder: false,
+
+  isProductionOrder: false,
+
+  productionStatus: 'Не запущен',
+
+  /*
+  |--------------------------------------------------------------------------
+  | IMPORTANT
+  |--------------------------------------------------------------------------
+  */
+
+  priceIsApproximate: true,
+
 })
 
-const form = reactive(defaultForm())
+const form = reactive(
+  defaultForm()
+)
 
 const saving = ref(false)
 
 /*
 |--------------------------------------------------------------------------
-| COMPUTED
+| ERRORS
 |--------------------------------------------------------------------------
 */
 
-const is3D = computed(() => form.type === '3d')
+const errors = reactive({
+  clientName: '',
+  clientPhone: '',
+  clientEmail: '',
 
-const isGabion = computed(() => form.type === 'gabion')
+  organizationName: '',
+  inn: '',
 
-const isTemporary = computed(() => form.type === 'temporary')
+  length: '',
+  customColor: '',
+})
 
-const finalWidth = computed(() => {
 
-  if (form.width === 'custom') {
-    return Number(form.customWidth) || 0
+const integerFields = [
+  'length',
+  'height',
+  'cornersCount',
+  'wicketCount',
+  'swingGateCount',
+  'slidingGateCount',
+  'deliveryPriceManual',
+  'installationPriceManual',
+  'sportRows',
+  'customDiscount',
+]
+
+const normalizeInteger = (field) => {
+  form[field] = Math.max(
+    parseInt(form[field], 10) || 0,
+    0,
+  )
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| VALIDATION
+|--------------------------------------------------------------------------
+*/
+
+const validateForm = () => {
+
+  let valid = true
+
+  errors.clientName = ''
+  errors.clientPhone = ''
+  errors.clientEmail = ''
+  errors.length = ''
+  errors.customColor = ''
+
+  /*
+  |--------------------------------------------------------------------------
+  | NAME
+  |--------------------------------------------------------------------------
+  */
+
+  const nameRegex =
+    /^[А-Яа-яA-Za-zЁё\s-]+$/
+
+  if (
+    !form.clientName ||
+    form.clientName.trim().length < 3
+  ) {
+
+    errors.clientName =
+      'Введите ФИО'
+
+    valid = false
+
   }
 
-  return Number(form.width) || 0
+  else if (
+    !nameRegex.test(
+      form.clientName.trim()
+    )
+  ) {
+
+    errors.clientName =
+      'ФИО содержит недопустимые символы'
+
+    valid = false
+
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | PHONE
+  |--------------------------------------------------------------------------
+  */
+
+  const cleanedPhone =
+    form.clientPhone.replace(/\D/g, '')
+
+  if (
+    cleanedPhone.length !== 11 ||
+    !['7', '8'].includes(
+      cleanedPhone[0]
+    )
+  ) {
+
+    errors.clientPhone =
+      'Введите корректный телефон'
+
+    valid = false
+
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | EMAIL
+  |--------------------------------------------------------------------------
+  */
+
+  if (form.clientEmail) {
+
+    const emailRegex =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+    if (
+      !emailRegex.test(
+        form.clientEmail
+      )
+    ) {
+
+      errors.clientEmail =
+        'Некорректный email'
+
+      valid = false
+
+    }
+
+  }
+
+/*
+|--------------------------------------------------------------------------
+| LEGAL ENTITY
+|--------------------------------------------------------------------------
+*/
+
+  if (form.clientType === 'Юридическое лицо') {
+
+    if (!form.organizationName.trim()) {
+
+      errors.organizationName =
+        'Введите название организации'
+
+      valid = false
+
+    }
+
+    const innDigits =
+      form.inn.replace(/\D/g, '')
+
+    if (
+      innDigits.length !== 10 &&
+      innDigits.length !== 12
+    ) {
+
+      errors.inn =
+        'Введите корректный ИНН'
+
+      valid = false
+
+    }
+
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | LENGTH
+  |--------------------------------------------------------------------------
+  */
+
+  if (
+    !form.length ||
+    Number(form.length) <= 0
+  ) {
+
+    errors.length =
+      'Введите длину ограждения'
+
+    valid = false
+
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | CUSTOM RAL
+  |--------------------------------------------------------------------------
+  */
+
+  if (
+    form.color === 'custom' &&
+    !form.customColor.trim()
+  ) {
+
+    errors.customColor =
+      'Введите RAL или цвет'
+
+    valid = false
+
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | DISCOUNT LIMITS
+  |--------------------------------------------------------------------------
+  */
+
+  if (form.customDiscount < 0) {
+    form.customDiscount = 0
+  }
+
+  if (form.customDiscount > 100) {
+    form.customDiscount = 100
+  }
+
+  return valid
+
+}
+
+/*
+|--------------------------------------------------------------------------
+| SPORT FENCE
+|--------------------------------------------------------------------------
+*/
+
+const finalFenceHeight = computed(() => {
+
+  if (!form.isSportFence) {
+    return Number(form.height)
+  }
+
+  return (
+    Number(form.height) *
+    Number(form.sportRows)
+  )
 
 })
 
-const finalHeight = computed(() => {
-
-  if (form.height === 'custom') {
-    return Number(form.customHeight) || 0
-  }
-
-  return Number(form.height) || 0
-
-})
-
-const finalWire = computed(() => {
-
-  if (form.wire === 'custom') {
-    return Number(form.customWire) || 0
-  }
-
-  return Number(form.wire) || 0
-
-})
-
-const finalPillars = computed(() => {
-
-  if (form.pillars === 'custom') {
-    return form.customPillars
-  }
-
-  return form.pillars
-
-})
+/*
+|--------------------------------------------------------------------------
+| CALCULATION
+|--------------------------------------------------------------------------
+*/
 
 const calculation = computed(() => {
 
@@ -165,12 +499,10 @@ const calculation = computed(() => {
 
     ...form,
 
-    width: finalWidth.value,
-    height: finalHeight.value,
-    wire: finalWire.value,
-    pillars: finalPillars.value,
+    finalFenceHeight:
+      finalFenceHeight.value,
 
-  }) || {}
+  })
 
 })
 
@@ -182,6 +514,23 @@ const totalPrice = computed(() => {
 
 })
 
+const wicketHeightWarning = computed(() => {
+
+  if (Number(form.wicketCount) <= 0) {
+    return ''
+  }
+
+  if (
+    Number(form.wicketHeight) !==
+    Number(form.height)
+  ) {
+    return 'Высота калитки отличается от высоты ограждения. Проверьте корректность параметров.'
+  }
+
+  return ''
+
+})
+
 /*
 |--------------------------------------------------------------------------
 | SAVE
@@ -190,18 +539,10 @@ const totalPrice = computed(() => {
 
 const submitRequest = async () => {
 
-  if (!form.clientName) {
-    alert('Введите имя клиента')
-    return
-  }
+  const isValid =
+    validateForm()
 
-  if (!form.clientPhone) {
-    alert('Введите телефон')
-    return
-  }
-
-  if (!form.length || Number(form.length) <= 0) {
-    alert('Введите длину ограждения')
+  if (!isValid) {
     return
   }
 
@@ -209,26 +550,63 @@ const submitRequest = async () => {
 
     saving.value = true
 
-    const result = await createRequest({
+    const result =
+      await createRequest({
 
-      ...form,
+        ...form,
 
-      width: finalWidth.value,
-      height: finalHeight.value,
-      wire: finalWire.value,
-      pillars: finalPillars.value,
+        /*
+        |--------------------------------------------------------------------------
+        | HEIGHT
+        |--------------------------------------------------------------------------
+        */
 
-      calculation: calculation.value,
+        status: 'Заказ рассчитан',
 
-      totalPrice: totalPrice.value,
+        actualFenceHeight:
+          finalFenceHeight.value,
 
-      createdAt: serverTimestamp(),
+        /*
+        |--------------------------------------------------------------------------
+        | CALCULATION
+        |--------------------------------------------------------------------------
+        */
 
-    })
+        calculation:
+          calculation.value,
+
+        totalPrice:
+          totalPrice.value,
+
+        /*
+        |--------------------------------------------------------------------------
+        | ORDER FLOW
+        |--------------------------------------------------------------------------
+        */
+
+        convertedToOrder: false,
+
+        orderId: null,
+
+        /*
+        |--------------------------------------------------------------------------
+        | TIMESTAMPS
+        |--------------------------------------------------------------------------
+        */
+
+        createdAt:
+          serverTimestamp(),
+
+        updatedAt:
+          serverTimestamp(),
+
+      })
 
     if (result.success) {
 
-      alert('Заявка успешно сохранена')
+      alert(
+        'Заявка успешно сохранена'
+      )
 
       Object.assign(
         form,
@@ -237,7 +615,9 @@ const submitRequest = async () => {
 
     } else {
 
-      alert('Ошибка сохранения')
+      alert(
+        'Ошибка сохранения'
+      )
 
     }
 
@@ -245,7 +625,9 @@ const submitRequest = async () => {
 
     console.log(error)
 
-    alert('Ошибка сохранения')
+    alert(
+      'Ошибка сохранения'
+    )
 
   } finally {
 
@@ -254,14 +636,22 @@ const submitRequest = async () => {
   }
 
 }
+const sourceOptions = [
+  'Авито',
+  'Новый сайт',
+  'Старый сайт',
+  '2ГИС',
+  'Звонок',
+  'Рекомендация',
+  'Повторный клиент',
+  'Другое',
+]
 
 </script>
 
 <template>
 
   <div>
-
-    <!-- HEADER -->
 
     <div class="mb-8">
 
@@ -270,7 +660,7 @@ const submitRequest = async () => {
       </h1>
 
       <p class="text-gray-400 mt-2">
-        Автоматический расчет стоимости ограждений
+        Расчет стоимости 3D ограждений
       </p>
 
     </div>
@@ -286,7 +676,7 @@ const submitRequest = async () => {
         <div class="card">
 
           <h2 class="title">
-            Контактные данные клиента
+            Контактные данные
           </h2>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -294,7 +684,7 @@ const submitRequest = async () => {
             <div>
 
               <label class="label">
-                Ваше имя
+                ФИО *
               </label>
 
               <input
@@ -304,20 +694,34 @@ const submitRequest = async () => {
                 placeholder="Иванов Иван Иванович"
               />
 
+              <p
+                v-if="errors.clientName"
+                class="error"
+              >
+                {{ errors.clientName }}
+              </p>
+
             </div>
 
             <div>
 
               <label class="label">
-                Телефон
+                Телефон *
               </label>
 
               <input
                 v-model="form.clientPhone"
                 type="text"
                 class="input"
-                placeholder="+7 (999) 999-99-99"
+                placeholder="+79999999999"
               />
+
+              <p
+                v-if="errors.clientPhone"
+                class="error"
+              >
+                {{ errors.clientPhone }}
+              </p>
 
             </div>
 
@@ -331,13 +735,18 @@ const submitRequest = async () => {
                 v-model="form.clientEmail"
                 type="email"
                 class="input"
-                placeholder="mail@example.com"
               />
+
+              <p
+                v-if="errors.clientEmail"
+                class="error"
+              >
+                {{ errors.clientEmail }}
+              </p>
 
             </div>
 
-            <div class="md:col-span-2">
-
+            <div>
               <label class="label">
                 Тип клиента
               </label>
@@ -346,16 +755,88 @@ const submitRequest = async () => {
                 v-model="form.clientType"
                 class="input"
               >
-
                 <option
                   v-for="type in clientTypes"
                   :key="type"
                 >
                   {{ type }}
                 </option>
-
               </select>
+            </div>
 
+            <template v-if="form.clientType === 'Юридическое лицо'">
+
+              <div>
+                <label class="label">
+                  Название организации *
+                </label>
+
+                <input
+                  v-model="form.organizationName"
+                  type="text"
+                  class="input"
+                  placeholder='ООО "Россетка"'
+                />
+
+                <p
+                  v-if="errors.organizationName"
+                  class="error"
+                >
+                  {{ errors.organizationName }}
+                </p>
+              </div>
+
+              <div>
+                <label class="label">
+                  ИНН *
+                </label>
+
+                <input
+                  v-model="form.inn"
+                  type="text"
+                  class="input"
+                  placeholder="5901234567"
+                />
+
+                <p
+                  v-if="errors.inn"
+                  class="error"
+                >
+                  {{ errors.inn }}
+                </p>
+              </div>
+
+            </template>
+
+            <div>
+              <label class="label">
+                Источник обращения
+              </label>
+
+              <select
+                v-model="form.source"
+                class="input"
+              >
+                <option
+                  v-for="source in sourceOptions"
+                  :key="source"
+                >
+                  {{ source }}
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="label">
+                Город / регион объекта
+              </label>
+
+              <input
+                v-model="form.city"
+                type="text"
+                class="input"
+                placeholder="Например: Пермь"
+              />
             </div>
 
           </div>
@@ -367,400 +848,288 @@ const submitRequest = async () => {
         <div class="card">
 
           <h2 class="title">
-            Параметры ограждения
+            Блок 1. Геометрия
           </h2>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-            <!-- TYPE -->
+            <div>
+              <label class="label">Длина ограждения (м)</label>
+              <input v-model="form.length" @input="normalizeInteger('length')" type="number" min="0" step="1" class="input" />
+              <p v-if="errors.length" class="error">{{ errors.length }}</p>
+            </div>
 
             <div>
-
-              <label class="label">
-                Тип ограждения
-              </label>
-
-              <select
-                v-model="form.type"
-                class="input"
-              >
-
-                <option value="3d">
-                  3D забор
-                </option>
-
-                <option value="gabion">
-                  Габион
-                </option>
-
-                <option value="temporary">
-                  Временное ограждение
-                </option>
-
-                <option value="welded">
-                  Сварное ограждение
-                </option>
-
+              <label class="label">Высота ограждения</label>
+              <select v-model="form.height" class="input">
+                <option v-for="height in panelHeightOptions" :key="height" :value="height">{{ height }} мм</option>
               </select>
-
             </div>
-
-            <!-- LENGTH -->
 
             <div>
-
-              <label class="label">
-                Длина ограждения (м)
-              </label>
-
-              <input
-                v-model="form.length"
-                type="number"
-                class="input"
-              />
-
+              <label class="label">Количество углов</label>
+              <input v-model="form.cornersCount" @input="normalizeInteger('cornersCount')" type="number" min="0" step="1" class="input" />
             </div>
-
-            <!-- WIDTH -->
 
             <div>
-
-              <label class="label">
-                Ширина секции (мм)
-              </label>
-
-              <select
-                v-model="form.width"
-                class="input"
-              >
-
-                <option :value="2500">
-                  2500 мм
-                </option>
-
-                <option :value="3000">
-                  3000 мм
-                </option>
-
-                <option value="custom">
-                  Свой вариант
-                </option>
-
-              </select>
-
-              <input
-                v-if="form.width === 'custom'"
-                v-model="form.customWidth"
-                type="number"
-                class="input mt-3"
-                placeholder="Введите ширину"
-              />
-
+              <label class="label">Количество калиток</label>
+              <input v-model="form.wicketCount" @input="normalizeInteger('wicketCount')" type="number" min="0" step="1" class="input" />
             </div>
-
-            <!-- HEIGHT -->
 
             <div>
-
-              <label class="label">
-                Высота секции (мм)
-              </label>
-
-              <select
-                v-model="form.height"
-                class="input"
-              >
-
-                <option :value="630">630 мм</option>
-                <option :value="1030">1030 мм</option>
-                <option :value="1230">1230 мм</option>
-                <option :value="1530">1530 мм</option>
-                <option :value="1730">1730 мм</option>
-                <option :value="2030">2030 мм</option>
-                <option :value="2430">2430 мм</option>
-
-                <option value="custom">
-                  Свой вариант
-                </option>
-
-              </select>
-
-              <input
-                v-if="form.height === 'custom'"
-                v-model="form.customHeight"
-                type="number"
-                class="input mt-3"
-                placeholder="Введите высоту"
-              />
-
+              <label class="label">Количество распашных ворот</label>
+              <input v-model="form.swingGateCount" @input="normalizeInteger('swingGateCount')" type="number" min="0" step="1" class="input" />
             </div>
 
-            <!-- WIRE -->
-
-            <div v-if="is3D">
-
-              <label class="label">
-                Диаметр проволоки
-              </label>
-
-              <select
-                v-model="form.wire"
-                class="input"
-              >
-
-                <option value="3">
-                  3 мм
-                </option>
-
-                <option value="4">
-                  4 мм
-                </option>
-
-                <option value="5">
-                  5 мм
-                </option>
-
-                <option value="custom">
-                  Свой вариант
-                </option>
-
-              </select>
-
-              <input
-                v-if="form.wire === 'custom'"
-                v-model="form.customWire"
-                type="number"
-                class="input mt-3"
-                placeholder="Введите диаметр"
-              />
-
+            <div>
+              <label class="label">Количество откатных ворот</label>
+              <input v-model="form.slidingGateCount" @input="normalizeInteger('slidingGateCount')" type="number" min="0" step="1" class="input" />
             </div>
 
-            <!-- PILLARS -->
-
-            <div v-if="is3D || isTemporary">
-
-              <label class="label">
-                Столбы
-              </label>
-
-              <select
-                v-model="form.pillars"
-                class="input"
-              >
-
-                <option value="60x40">
-                  60x40 мм
-                </option>
-
-                <option value="60x60">
-                  60x60 мм
-                </option>
-
-                <option value="80x80">
-                  80x80 мм
-                </option>
-
-                <option value="none">
-                  Не нужны
-                </option>
-
-                <option value="custom">
-                  Свой вариант
-                </option>
-
-              </select>
-
-              <input
-                v-if="form.pillars === 'custom'"
-                v-model="form.customPillars"
-                type="text"
-                class="input mt-3"
-                placeholder="Введите размер столбов"
-              />
-
+            <div>
+              <label class="label">Стоимость доставки</label>
+              <input v-model="form.deliveryPriceManual" @input="normalizeInteger('deliveryPriceManual')" type="number" min="0" step="1" class="input" />
             </div>
 
-            <!-- WICKET -->
-
-            <div v-if="!isGabion">
-
-              <label class="label">
-                Калитка
-              </label>
-
-              <select
-                v-model="form.wicket"
-                class="input"
-              >
-
-                <option value="hooks">
-                  С проушинами
-                </option>
-
-                <option value="lock">
-                  С замком
-                </option>
-
-                <option value="none">
-                  Нет
-                </option>
-
-              </select>
-
-            </div>
-
-            <!-- GATE -->
-
-            <div v-if="!isGabion">
-
-              <label class="label">
-                Ворота
-              </label>
-
-              <select
-                v-model="form.gate"
-                class="input"
-              >
-
-                <option value="swing">
-                  Распашные
-                </option>
-
-                <option value="sliding">
-                  Откатные
-                </option>
-
-                <option value="none">
-                  Нет
-                </option>
-
-              </select>
-
-            </div>
-
-            <!-- COLOR -->
-
-            <div v-if="is3D">
-
-              <label class="label">
-                Цвет
-              </label>
-
-              <select
-                v-model="form.color"
-                class="input"
-              >
-
-                <option
-                  v-for="color in colors"
-                  :key="color.value"
-                  :value="color.value"
-                >
-                  {{ color.label }}
-                </option>
-
-              </select>
-
-              <input
-                v-if="form.color === 'custom'"
-                v-model="form.customColor"
-                type="text"
-                class="input mt-3"
-                placeholder="Введите цвет"
-              />
-
+            <div>
+              <label class="label">Стоимость монтажа</label>
+              <input v-model="form.installationPriceManual" @input="normalizeInteger('installationPriceManual')" type="number" min="0" step="1" class="input" />
             </div>
 
           </div>
 
         </div>
 
-        <!-- DELIVERY -->
-
         <div class="card">
 
           <h2 class="title">
-            Доставка и монтаж
+            Блок 2. Параметры панелей
           </h2>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
             <div>
-
-              <label class="label">
-                Тип доставки
-              </label>
-
-              <select
-                v-model="form.deliveryType"
-                class="input"
-              >
-
-                <option
-                  v-for="delivery in deliveryTypes"
-                  :key="delivery"
-                >
-                  {{ delivery }}
-                </option>
-
+              <label class="label">Диаметр проволоки</label>
+              <select v-model="form.wire" class="input">
+                <option v-for="wire in wireOptions" :key="wire" :value="wire">{{ wire }} мм</option>
               </select>
-
-            </div>
-
-            <div
-              v-if="
-                form.deliveryType ===
-                'Пермский край'
-              "
-            >
-
-              <label class="label">
-                Расстояние (км)
-              </label>
-
-              <input
-                v-model="form.distance"
-                type="number"
-                class="input"
-              />
-
             </div>
 
             <div>
-
-              <label class="label">
-                Монтаж
-              </label>
-
-              <select
-                v-model="form.installationType"
-                class="input"
-              >
-
-                <option
-                  v-for="install in installationTypes"
-                  :key="install"
-                >
-                  {{ install }}
-                </option>
-
+              <label class="label">Высота панели</label>
+              <select v-model="form.height" class="input">
+                <option v-for="height in panelHeightOptions" :key="height" :value="height">{{ height }} мм</option>
               </select>
-
             </div>
 
             <div>
+              <label class="label">Спортивная площадка / несколько рядов</label>
+              <select v-model="form.isSportFence" class="input">
+                <option :value="false">Нет</option>
+                <option :value="true">Да</option>
+              </select>
+            </div>
 
-              <label class="label">
-                Скидка (%)
-              </label>
+            <div v-if="form.isSportFence">
+              <label class="label">Количество рядов секций</label>
+              <input v-model="form.sportRows" @input="normalizeInteger('sportRows')" type="number" min="1" step="1" class="input" />
+              <p class="hint">Итоговая высота: {{ finalFenceHeight }} мм</p>
+            </div>
 
-              <input
-                v-model="form.customDiscount"
-                type="number"
-                class="input"
-              />
+            <div>
+              <label class="label">Покрытие</label>
+              <select v-model="form.coating" class="input">
+                <option v-for="coating in coatingOptions" :key="coating.value" :value="coating.value">{{ coating.label }}</option>
+              </select>
+            </div>
 
+            <div>
+              <label class="label">Ширина панели</label>
+              <select v-model="form.width" class="input">
+                <option :value="2500">2500 мм</option>
+                <option :value="3000">3000 мм</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="label">Размер ячейки</label>
+              <select v-model="form.cell" class="input">
+                <option v-for="cell in cellOptions" :key="cell" :value="cell">{{ cell }}</option>
+              </select>
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="card">
+
+          <h2 class="title">
+            Блок 3. Цвет
+          </h2>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <div>
+              <label class="label">Цвет</label>
+              <select v-model="form.color" class="input">
+                <option v-for="color in colors" :key="color.value" :value="color.value">{{ color.label }}</option>
+              </select>
+              <input v-if="form.color === 'custom'" v-model="form.customColor" type="text" class="input mt-3" placeholder="Введите RAL или цвет" />
+              <p v-if="errors.customColor" class="error">{{ errors.customColor }}</p>
+            </div>
+
+            <div class="notice">
+              Для любого цвета, кроме RAL 6005, автоматически применяется надбавка: +20% при материалах менее 50 000 ₽ и +10% при материалах от 50 000 ₽.
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="card">
+
+          <h2 class="title">
+            Блок 4. Крепеж
+          </h2>
+
+          <select v-model="form.fastening" class="input">
+            <option v-for="fastening in fasteningOptions" :key="fastening.value" :value="fastening.value">{{ fastening.label }}</option>
+          </select>
+
+        </div>
+
+        <!-- WICKET -->
+
+        <div class="card">
+          <h2 class="title">
+            Блок 5. Калитки
+          </h2>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <template v-if="form.wicketCount > 0">
+
+              <div>
+                <label class="label">Тип калитки</label>
+                <select v-model="form.wicketType" class="input">
+                  <option value="standard">Калитка Стандарт</option>
+                  <option value="lock">Калитка Стандарт с замком</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="label">
+                  Высота калитки
+                </label>
+
+                <select
+                  v-model="form.wicketHeight"
+                  class="input"
+                >
+                  <option
+                    v-for="height in gateHeightOptions"
+                    :key="height"
+                    :value="height"
+                  >
+                    {{ height }} мм
+                  </option>
+                </select>
+
+                <p
+                  v-if="wicketHeightWarning"
+                  class="warning"
+                >
+                  {{ wicketHeightWarning }}
+                </p>
+              </div>
+
+              <div>
+                <label class="label">Ширина калитки</label>
+                <div class="input bg-gray-50 text-gray-500">
+                  1000 мм
+                </div>
+              </div>
+
+            </template>
+
+            <p v-else class="hint md:col-span-2">
+              Калитка не выбрана. Количество калиток задается в блоке «Геометрия».
+            </p>
+
+          </div>
+
+        </div>
+
+        <div class="card">
+
+          <h2 class="title">
+            Блок 6. Ворота
+          </h2>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <template v-if="form.swingGateCount > 0">
+              <div class="md:col-span-2 subtitle">Распашные ворота</div>
+
+              <div>
+                <label class="label">Высота</label>
+                <select v-model="form.swingGateHeight" class="input">
+                  <option v-for="height in gateHeightOptions" :key="height" :value="height">{{ height }} мм</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="label">Ширина проема</label>
+                <select v-model="form.swingGateWidth" class="input">
+                  <option v-for="width in gateWidthOptions" :key="width" :value="width">{{ width }} мм</option>
+                </select>
+              </div>
+            </template>
+
+            <template v-if="form.slidingGateCount > 0">
+              <div class="md:col-span-2 subtitle">Откатные ворота</div>
+
+              <div>
+                <label class="label">Высота</label>
+                <select v-model="form.slidingGateHeight" class="input">
+                  <option v-for="height in gateHeightOptions" :key="height" :value="height">{{ height }} мм</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="label">Ширина проема</label>
+                <select v-model="form.slidingGateWidth" class="input">
+                  <option v-for="width in gateWidthOptions" :key="width" :value="width">{{ width }} мм</option>
+                </select>
+              </div>
+            </template>
+
+            <p v-if="form.swingGateCount === 0 && form.slidingGateCount === 0" class="hint md:col-span-2">
+              Ворота не выбраны. Количество ворот задается в блоке «Геометрия».
+            </p>
+
+          </div>
+
+        </div>
+
+        <!-- FINANCE -->
+
+        <div class="card">
+
+          <h2 class="title">
+            Дополнительные параметры
+          </h2>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <div>
+              <label class="label">Скидка (%)</label>
+              <input v-model="form.customDiscount" @input="normalizeInteger('customDiscount')" type="number" min="0" max="100" step="1" class="input" />
+            </div>
+
+            <div class="notice">
+              Доставка и монтаж не рассчитываются автоматически. Эти значения вводятся менеджером вручную в блоке «Геометрия».
             </div>
 
           </div>
@@ -790,13 +1159,47 @@ const submitRequest = async () => {
 
       <div>
 
-        <div class="card sticky top-6">
+        <div class="card sticky top-6 max-h-[calc(100vh-48px)] overflow-y-auto">
 
           <h2 class="title">
             Расчет стоимости
           </h2>
 
           <div class="space-y-4">
+
+            <div class="summary-box">
+              <div class="summary-title">Смета</div>
+
+              <div
+                v-for="row in calculation.estimateRows"
+                :key="`${row.name}-${row.characteristics}`"
+                class="estimate-row"
+              >
+                <div>
+                  <strong>{{ row.name }}</strong>
+                  <p>{{ row.characteristics }}</p>
+                  <p>{{ row.quantity }} шт. × {{ Number(row.unitPrice || 0).toLocaleString() }} ₽</p>
+                </div>
+                <strong>{{ Number(row.sum || 0).toLocaleString() }} ₽</strong>
+              </div>
+            </div>
+
+            <div v-if="calculation.coefficients?.length" class="summary-box">
+              <div class="summary-title">Коэффициенты</div>
+              <p v-for="coefficient in calculation.coefficients" :key="coefficient" class="hint">
+                {{ coefficient }}
+              </p>
+            </div>
+
+
+            <div class="line">
+              <span>Итоговая высота</span>
+
+              <strong>
+                {{ finalFenceHeight }} мм
+              </strong>
+            </div>
+
 
             <div class="line">
               <span>Панели</span>
@@ -807,43 +1210,87 @@ const submitRequest = async () => {
             </div>
 
             <div class="line">
+
               <span>Столбы</span>
 
               <strong>
                 {{ Number(calculation.pillarsPrice || 0).toLocaleString() }} ₽
               </strong>
+
             </div>
 
             <div class="line">
+
+              <span>Крепления</span>
+
+              <strong>
+                {{ Number(calculation.fasteningPrice || 0).toLocaleString() }} ₽
+              </strong>
+
+            </div>
+
+            <div class="line">
+
               <span>Калитка</span>
 
               <strong>
                 {{ Number(calculation.wicketPrice || 0).toLocaleString() }} ₽
               </strong>
+
             </div>
 
             <div class="line">
+
               <span>Ворота</span>
 
               <strong>
                 {{ Number(calculation.gatePrice || 0).toLocaleString() }} ₽
               </strong>
+
             </div>
 
             <div class="line">
+
               <span>Доставка</span>
 
               <strong>
                 {{ Number(calculation.deliveryPrice || 0).toLocaleString() }} ₽
               </strong>
+
             </div>
 
             <div class="line">
+
               <span>Монтаж</span>
 
               <strong>
                 {{ Number(calculation.installationPrice || 0).toLocaleString() }} ₽
               </strong>
+
+            </div>
+
+            <div class="line">
+
+              <span>Стоимость материалов</span>
+
+              <strong>
+                {{ Number(calculation.materialsPrice || 0).toLocaleString() }} ₽
+              </strong>
+
+            </div>
+
+            <div class="line">
+
+              <span>НДС 22%</span>
+
+              <strong>
+                {{ Number(calculation.vatPrice || 0).toLocaleString() }} ₽
+              </strong>
+
+            </div>
+
+            <div class="notice">
+              {{ calculation.calculationComment }}
             </div>
 
             <div class="total-box">
@@ -865,7 +1312,13 @@ const submitRequest = async () => {
             :disabled="saving"
             class="save-btn"
           >
-            {{ saving ? 'Сохранение...' : 'Сохранить заявку' }}
+
+            {{
+              saving
+                ? 'Сохранение...'
+                : 'Сохранить заявку'
+            }}
+
           </button>
 
         </div>
@@ -896,6 +1349,10 @@ const submitRequest = async () => {
   @apply w-full border border-gray-200 rounded-2xl px-5 py-4 outline-none focus:border-[#0044AA] transition;
 }
 
+.error {
+  @apply text-red-500 text-sm mt-1;
+}
+
 .line {
   @apply flex justify-between items-center text-gray-700 py-2 border-b border-gray-100;
 }
@@ -912,4 +1369,35 @@ const submitRequest = async () => {
   @apply w-full mt-8 bg-[#0044AA] hover:bg-[#003380] disabled:opacity-50 text-white py-4 rounded-2xl font-semibold transition;
 }
 
+.hint {
+  @apply text-sm text-gray-400 mt-2;
+}
+
+.notice {
+  @apply text-sm text-gray-500 bg-gray-50 rounded-2xl p-4 leading-relaxed;
+}
+
+.subtitle {
+  @apply text-lg font-semibold text-gray-700 mt-2;
+}
+
+.summary-box {
+  @apply bg-gray-50 rounded-2xl p-4 space-y-3;
+}
+
+.summary-title {
+  @apply font-bold text-gray-700;
+}
+
+.estimate-row {
+  @apply flex justify-between gap-3 text-sm border-b border-gray-200 pb-3 last:border-b-0 last:pb-0;
+}
+
+.estimate-row p {
+  @apply text-gray-400 mt-1;
+}
+
+.warning {
+  @apply text-orange-500 text-sm mt-2;
+}
 </style>

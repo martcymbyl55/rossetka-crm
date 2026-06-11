@@ -1,5 +1,4 @@
 <script setup>
-
 import {
   LayoutDashboard,
   ClipboardList,
@@ -7,20 +6,15 @@ import {
   Users,
   BarChart3,
   Settings,
+  PlusCircle,
 } from 'lucide-vue-next'
-
 </script>
 
 <template>
-
   <aside
     class="w-[280px] bg-white border-r border-gray-100 h-screen p-6 flex flex-col"
   >
-
-    <!-- LOGO -->
-
     <div class="mb-10">
-
       <h1 class="text-3xl font-bold text-[#0044AA]">
         FenceCRM
       </h1>
@@ -28,23 +22,16 @@ import {
       <p class="text-gray-400 text-sm mt-1">
         CRM система
       </p>
-
     </div>
 
-    <!-- MENU -->
-
     <nav class="flex flex-col gap-2">
-
       <RouterLink
         to="/dashboard"
         class="menu-item"
         active-class="menu-active"
       >
         <LayoutDashboard size="20" />
-
-        <span>
-          Dashboard
-        </span>
+        <span>Dashboard</span>
       </RouterLink>
 
       <RouterLink
@@ -53,10 +40,16 @@ import {
         active-class="menu-active"
       >
         <ClipboardList size="20" />
+        <span>Заявки</span>
+      </RouterLink>
 
-        <span>
-          Заявки
-        </span>
+      <RouterLink
+        to="/requests/create"
+        class="menu-item"
+        active-class="menu-active"
+      >
+        <PlusCircle size="20" />
+        <span>Создать заявку</span>
       </RouterLink>
 
       <RouterLink
@@ -65,10 +58,7 @@ import {
         active-class="menu-active"
       >
         <ShoppingCart size="20" />
-
-        <span>
-          Заказы
-        </span>
+        <span>Заказы</span>
       </RouterLink>
 
       <RouterLink
@@ -77,10 +67,7 @@ import {
         active-class="menu-active"
       >
         <Users size="20" />
-
-        <span>
-          Клиенты
-        </span>
+        <span>Клиенты</span>
       </RouterLink>
 
       <RouterLink
@@ -89,10 +76,7 @@ import {
         active-class="menu-active"
       >
         <BarChart3 size="20" />
-
-        <span>
-          Аналитика
-        </span>
+        <span>Аналитика</span>
       </RouterLink>
 
       <RouterLink
@@ -101,20 +85,11 @@ import {
         active-class="menu-active"
       >
         <Settings size="20" />
-
-        <span>
-          Настройки
-        </span>
+        <span>Настройки</span>
       </RouterLink>
-
     </nav>
 
-    <!-- USER -->
-
-    <div
-      class="mt-auto bg-gray-50 rounded-2xl p-4"
-    >
-
+    <div class="mt-auto bg-gray-50 rounded-2xl p-4">
       <div class="font-semibold text-gray-800">
         Менеджер
       </div>
@@ -122,15 +97,11 @@ import {
       <div class="text-sm text-gray-400">
         admin@crm.ru
       </div>
-
     </div>
-
   </aside>
-
 </template>
 
 <style scoped>
-
 .menu-item {
   @apply flex items-center gap-3 px-5 py-4 rounded-2xl text-gray-600 hover:bg-gray-100 transition font-medium;
 }
@@ -138,5 +109,4 @@ import {
 .menu-active {
   @apply bg-[#0044AA] text-white hover:bg-[#0044AA];
 }
-
 </style>
