@@ -33,6 +33,8 @@ from '../pages/LoginPage.vue'
 import { auth }
 from '../firebase'
 
+import { onAuthStateChanged } from 'firebase/auth'
+
 // =====================================
 // ROUTES
 // =====================================
@@ -124,42 +126,40 @@ const router = createRouter({
 
 })
 
+const getCurrentUser = () => {
+  return new Promise((resolve) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      unsubscribe()
+      resolve(user)
+    })
+  })
+}
 // =====================================
 // AUTH GUARD
 // =====================================
 
-router.beforeEach((to) => {
-
+router.beforeEach(async (to) => {
   const requiresAuth =
     to.matched.some(
       (record) => record.meta.requiresAuth
     )
 
   const user =
-    auth.currentUser
-
-  // НЕ АВТОРИЗОВАН
+    await getCurrentUser()
 
   if (
     requiresAuth &&
     !user
   ) {
-
     return '/login'
-
   }
-
-  // УЖЕ АВТОРИЗОВАН
 
   if (
     to.path === '/login' &&
     user
   ) {
-
     return '/dashboard'
-
   }
-
 })
 
 export default router
